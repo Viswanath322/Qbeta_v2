@@ -1,4 +1,4 @@
-# QBETA V2 — AI-Native Superconducting Quantum Chip Engineering Platform
+# QBETA V2 —  Superconducting Quantum Chip Designing
 
 > **Natural language → Physics-accurate quantum chip layout → Fabricated GDS export**
 
