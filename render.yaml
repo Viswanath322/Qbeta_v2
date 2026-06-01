@@ -1,0 +1,15 @@
+# Deploy Flask backend on Render: https://render.com
+# Dashboard → New → Blueprint → connect this repo (or paste this file).
+services:
+  - type: web
+    name: qbeta-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.11.9"

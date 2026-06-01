@@ -1,0 +1,8 @@
+# Lighter production install (no PyTorch). ML intent falls back to regex.
+flask
+flask-cors
+gunicorn
+matplotlib
+networkx
+numpy
+requests
