@@ -1,3 +1,4 @@
+
 flask
 flask-cors
 matplotlib
@@ -12,3 +13,4 @@ qiskit-aer
 # pip install --user qiskit-metal
 # pylatexenc is required by qiskit circuit drawer
 pylatexenc
+gunicorn
