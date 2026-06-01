@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -236,6 +236,8 @@ frontend/node_modules/
 frontendv2/node_modules/
 frontendv2/dist/
 frontendv2/.output/
+frontendv2/.vercel/
 frontendv2/.nitro/
 frontendv2/.env.local
+frontendv2/.env
 # Note: frontendv2/.env is committed (contains only localhost URL — no secrets)
