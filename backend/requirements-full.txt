@@ -1,7 +1,5 @@
-# Full backend (Metal + ML). Python 3.11 only. Render Starter+ recommended.
-# Build command (see DEPLOY.md):
-#   pip install --upgrade pip setuptools wheel && pip install -r requirements-full.txt
-
+# ML + Qiskit for cloud/local (NO qiskit-metal here — PyPI metal 0.1.x breaks on Py3.11).
+# Install Metal separately: see INSTALL_METAL.md
 setuptools>=69.0
 wheel>=0.42
 pip>=24.0
@@ -15,12 +13,8 @@ numpy
 requests
 pylatexenc
 
-# CPU-only PyTorch (smaller; works on Linux cloud)
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch
 
 qiskit
 qiskit-aer
-
-# Metal is large; may fail on small instances — use requirements-ml.txt if this step fails
-qiskit-metal

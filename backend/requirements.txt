@@ -10,8 +10,7 @@ torch
 # Qiskit packages
 qiskit
 qiskit-aer
-# Optional: install from source for full Qiskit Metal support
-# pip install --user qiskit-metal
+# Qiskit Metal: do NOT pip install qiskit-metal from PyPI (old 0.1.x / PySide2 conflict).
+# See INSTALL_METAL.md — install from GitHub 0.7.1 or conda if you need fabrication layouts.
 # pylatexenc is required by qiskit circuit drawer
 pylatexenc
-qiskit-metal
