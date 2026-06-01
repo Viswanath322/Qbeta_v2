@@ -304,6 +304,6 @@ def generate_metal_chip(prompt: str) -> Dict[str, Any]:
             )
 
     return _build_schematic_response(
-        prompt, "pip install --user quantum-metal",
+        prompt, "pip install qiskit-metal from GitHub 0.7.x (see INSTALL_METAL.md)",
         n, requested, topology, scale, label, ml_info,
     )

@@ -7,9 +7,14 @@ Neural network reads natural-language prompts and predicts:
 
 Uses bag-of-words features + a small feedforward net (QuantumIntentModel).
 """
+from __future__ import annotations
+
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import torch.nn as nn
 
 try:
     import torch
@@ -304,21 +309,37 @@ def resolve_design_params(prompt: str, max_qubits: int = 24) -> Tuple[int, int, 
     # Explicit 1–7: use that count; ML helps topology
     if requested is not None and ML_QUBIT_MIN <= requested <= ML_QUBIT_MAX:
         n = max(ML_QUBIT_MIN, min(max_qubits, requested))
-        ml_info = predict_intent(prompt)
-        topology = _apply_topology_keywords(prompt, ml_info["topology"])
-        ml_info = {
-            **ml_info,
-            "qubits": requested,
-            "topology": topology,
-            "method": "ml+regex",
-            "ml_skipped": False,
-            "reason": f"Explicit {requested} qubits in ML range; topology from ML + keywords",
-        }
-        return n, requested, topology, ml_info
+        try:
+            ml_info = predict_intent(prompt)
+            topology = _apply_topology_keywords(prompt, ml_info["topology"])
+            ml_info = {
+                **ml_info,
+                "qubits": requested,
+                "topology": topology,
+                "method": "ml+regex",
+                "ml_skipped": False,
+                "reason": f"Explicit {requested} qubits in ML range; topology from ML + keywords",
+            }
+            return n, requested, topology, ml_info
+        except Exception:
+            topology = _detect_topology_regex(prompt, n)
+            ml_info = {
+                "qubits": n,
+                "topology": topology,
+                "class_index": None,
+                "confidence": None,
+                "method": "regex",
+                "ml_skipped": True,
+                "reason": "ML unavailable — using rule-based parser",
+            }
+            return n, requested, topology, ml_info
 
-    # No explicit count → ML predicts 1–7
-    ml_info = predict_intent(prompt)
-    n = max(ML_QUBIT_MIN, min(max_qubits, ml_info["qubits"]))
-    topology = _apply_topology_keywords(prompt, ml_info["topology"])
-    ml_info = {**ml_info, "topology": topology, "ml_skipped": False, "reason": "ML intent (1–7 qubits)"}
-    return n, ml_info["qubits"], topology, ml_info
+    # No explicit count → ML predicts 1–7 (guard broken/partial torch installs)
+    try:
+        ml_info = predict_intent(prompt)
+        n = max(ML_QUBIT_MIN, min(max_qubits, ml_info["qubits"]))
+        topology = _apply_topology_keywords(prompt, ml_info["topology"])
+        ml_info = {**ml_info, "topology": topology, "ml_skipped": False, "reason": "ML intent (1–7 qubits)"}
+        return n, ml_info["qubits"], topology, ml_info
+    except Exception:
+        return _resolve_regex_only(prompt, requested or 0, max_qubits)

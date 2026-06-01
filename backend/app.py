@@ -64,16 +64,37 @@ else:
 
 @app.route("/health", methods=["GET"])
 def health():
-    from metal_connector import metal_status as _ms
-    ms = _ms()
+    """Always return JSON — never 500 (safe for Render/Vercel health checks)."""
+    try:
+        from metal_connector import metal_status as _ms
+        ms = _ms()
+    except Exception as e:
+        ms = {
+            "installed": False,
+            "version": None,
+            "test_build": False,
+            "error": str(e),
+            "components": {},
+        }
+
+    try:
+        ml_ok = _ml_ready()
+    except Exception:
+        ml_ok = False
+
+    try:
+        gds_ok = _gds_ready()
+    except Exception:
+        gds_ok = False
+
     return jsonify({
         "status":       "ok",
         "version":      "v2",
-        "qiskit_metal": "available" if ms["installed"] else "not_installed",
-        "metal_version":ms["version"],
-        "test_build":   ms["test_build"],
-        "ml_intent":    "ready" if _ml_ready() else "unavailable",
-        "gds_renderer": "available" if _gds_ready() else "not_installed",
+        "qiskit_metal": "available" if ms.get("installed") else "not_installed",
+        "metal_version": ms.get("version"),
+        "test_build":   ms.get("test_build", False),
+        "ml_intent":    "ready" if ml_ok else "unavailable",
+        "gds_renderer": "available" if gds_ok else "not_installed",
         "max_qubits":   MAX_QUBITS,
         "pipeline": [
             "FrequencyPlanner",
@@ -83,7 +104,8 @@ def health():
             "MetalConnector (Qiskit Metal)",
             "GDSExport",
         ],
-        "components": ms["components"],
+        "components": ms.get("components") or {},
+        "metal_error":  ms.get("error"),
     })
 
 
