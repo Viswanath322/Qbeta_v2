@@ -1,15 +1,32 @@
-const BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_BACKEND_URL) ||
-  "http://localhost:5000";
+function resolveBackendUrl(): string {
+  const fromEnv = import.meta.env?.VITE_BACKEND_URL;
+  if (typeof fromEnv === "string" && fromEnv.trim()) {
+    return fromEnv.trim().replace(/\/$/, "");
+  }
+  // Production on Vercel: same-origin /api → proxied to Render (see vercel.json)
+  if (import.meta.env.PROD) {
+    return "/api";
+  }
+  return "http://localhost:5000";
+}
+
+const BASE_URL = resolveBackendUrl();
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...init?.headers,
+      },
+    });
+  } catch {
+    throw new Error(
+      `Cannot reach backend at ${BASE_URL}. Start Terminal 1: cd backend → python app.py`,
+    );
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg =

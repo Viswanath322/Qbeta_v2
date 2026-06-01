@@ -21,8 +21,9 @@ Chip generation and the dashboard health check need **both** deployed and connec
 4. Settings:
    - **Root Directory:** `backend`
    - **Runtime:** Python 3
-   - **Build Command:** `pip install -r requirements-prod.txt`
+   - **Build Command:** `pip install -r requirements-prod.txt` (faster) or `pip install -r requirements.txt` (full ML + Metal deps — must include `gunicorn`)
    - **Start Command:** `gunicorn --bind 0.0.0.0:$PORT app:app`
+   - If you see `gunicorn: command not found`, your build file is missing `gunicorn` — use `requirements-prod.txt` or redeploy after pulling latest `requirements.txt`
 5. Deploy and copy your URL, e.g. `https://qbeta-backend.onrender.com`.
 
 ### Option B — Blueprint
@@ -115,9 +116,56 @@ If `.vercel/output` is missing, ensure `vite.config.ts` includes `nitro({ preset
 
 ---
 
-## 6. Optional: full ML backend
+## 6. Full backend (same as local — Metal + ML)
 
-`requirements-prod.txt` skips PyTorch for faster deploys. For ML intent on the server, use `requirements.txt` as the Render build command (longer build, more RAM).
+Free Render + `requirements-prod.txt` only gives **schematic** mode. For the same output as local:
+
+### Requirements
+
+| Item | Notes |
+|------|--------|
+| **RAM** | **2 GB minimum** (PyTorch + Metal). Free Render (512 MB) is not enough. |
+| **Build time** | ~15–25 minutes first deploy |
+| **Files** | `backend/requirements-full.txt` or `backend/Dockerfile` |
+
+### Option A — Render (paid plan)
+
+1. Render → your web service → **Settings**
+2. Change **Instance type** to **Starter** (or higher)
+3. **Build Command:**
+   ```bash
+   pip install -r requirements-full.txt
+   ```
+4. **Start Command** (long timeout for chip generation):
+   ```bash
+   gunicorn --bind 0.0.0.0:$PORT --timeout 120 --workers 1 app:app
+   ```
+5. **Manual Deploy** → wait for build to finish
+6. Open `https://YOUR-SERVICE.onrender.com/health` and confirm:
+   - `"ml_intent": "ready"`
+   - `"qiskit_metal": "available"`
+
+### Option B — Docker (Railway / Fly.io)
+
+From repo root:
+
+```bash
+cd backend
+docker build -t qbeta-api .
+docker run -p 5000:5000 qbeta-api
+```
+
+Point Vercel `VITE_BACKEND_URL` (or `vercel.json` `/api` proxy) at the new public URL.
+
+### Vercel after API upgrade
+
+No frontend code change if you keep using `/api` proxy — update `frontendv2/vercel.json` rewrite `destination` if the API hostname changes.
+
+Redeploy Vercel only if you change `VITE_BACKEND_URL`.
+
+### Lighter upgrade (ML only, no Metal)
+
+Build with `requirements.txt` (includes torch, no qiskit-metal). You get ML intent but may still see **schematic** layouts.
 
 ---
 

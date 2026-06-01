@@ -36,17 +36,26 @@ def _gds_ready() -> bool:
 
 
 app = Flask(__name__)
-CORS(app, origins=[
-    # Local development
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:4173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:4173",
-    # Production — Vercel deployments (update with your actual URLs after deploying)
-    r"https://.*\.vercel\.app",
-])
+_is_prod = os.environ.get("FLASK_ENV") == "production"
+if _is_prod:
+    CORS(app, origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:4173",
+        r"https://.*\.vercel\.app",
+    ])
+else:
+    # Local dev: allow LAN URLs (e.g. http://192.168.x.x:5173) and any port
+    CORS(app, origins=[
+        r"http://localhost(:\d+)?",
+        r"http://127\.0\.0\.1(:\d+)?",
+        r"http://192\.168\.\d{1,3}\.\d{1,3}(:\d+)?",
+        r"http://10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?",
+        r"https://.*\.vercel\.app",
+    ])
 
 
 # ---------------------------------------------------------------------------

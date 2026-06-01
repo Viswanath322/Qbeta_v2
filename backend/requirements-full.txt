@@ -1,0 +1,14 @@
+# Full backend — same capabilities as a well-configured local machine.
+# Needs ~2 GB+ RAM on the host (Render Starter or higher). Build may take 15–25 min.
+flask
+flask-cors
+gunicorn
+matplotlib
+networkx
+numpy
+requests
+torch
+qiskit
+qiskit-aer
+pylatexenc
+qiskit-metal
