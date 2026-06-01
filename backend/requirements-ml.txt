@@ -1,0 +1,20 @@
+# ML + Qiskit (no Qiskit Metal). Fits Render Starter; build ~10 min.
+# Use when requirements-full.txt fails.
+setuptools>=69.0
+wheel>=0.42
+pip>=24.0
+
+flask
+flask-cors
+gunicorn
+matplotlib
+networkx
+numpy
+requests
+pylatexenc
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+
+qiskit
+qiskit-aer

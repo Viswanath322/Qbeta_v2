@@ -1,5 +1,11 @@
-# Full backend — same capabilities as a well-configured local machine.
-# Needs ~2 GB+ RAM on the host (Render Starter or higher). Build may take 15–25 min.
+# Full backend (Metal + ML). Python 3.11 only. Render Starter+ recommended.
+# Build command (see DEPLOY.md):
+#   pip install --upgrade pip setuptools wheel && pip install -r requirements-full.txt
+
+setuptools>=69.0
+wheel>=0.42
+pip>=24.0
+
 flask
 flask-cors
 gunicorn
@@ -7,8 +13,14 @@ matplotlib
 networkx
 numpy
 requests
+pylatexenc
+
+# CPU-only PyTorch (smaller; works on Linux cloud)
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch
+
 qiskit
 qiskit-aer
-pylatexenc
+
+# Metal is large; may fail on small instances — use requirements-ml.txt if this step fails
 qiskit-metal

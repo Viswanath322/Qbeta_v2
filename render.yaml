@@ -5,11 +5,15 @@ services:
     name: qbeta-backend
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements-prod.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements-prod.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --timeout 120 --workers 1 app:app
     healthCheckPath: /health
     envVars:
       - key: FLASK_ENV
         value: production
       - key: PYTHON_VERSION
         value: "3.11.9"
+      - key: QISKIT_METAL_HEADLESS
+        value: "1"
+      - key: QISKIT_METAL_SUPPRESS_RENAME_WARNING
+        value: "1"

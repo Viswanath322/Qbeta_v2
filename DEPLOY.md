@@ -130,20 +130,38 @@ Free Render + `requirements-prod.txt` only gives **schematic** mode. For the sam
 
 ### Option A — Render (paid plan)
 
+**Important:** Use **Python 3.11**, not 3.14. Logs showing `python3.14` will break torch/Metal.
+
 1. Render → your web service → **Settings**
-2. Change **Instance type** to **Starter** (or higher)
-3. **Build Command:**
+2. **Environment** → add or set: `PYTHON_VERSION` = `3.11.9`
+3. Confirm **Root Directory** = `backend` (so `backend/runtime.txt` is used)
+4. Change **Instance type** to **Starter** (or higher)
+5. **Build Command** (try in this order):
+
+   **Step 1 — ML only** (no Metal, usually works):
    ```bash
-   pip install -r requirements-full.txt
+   pip install --upgrade pip setuptools wheel && pip install -r requirements-ml.txt
    ```
-4. **Start Command** (long timeout for chip generation):
+
+   **Step 2 — Full Metal** (if Step 1 succeeds and you need Metal):
+   ```bash
+   pip install --upgrade pip setuptools wheel && pip install -r requirements-full.txt
+   ```
+
+6. **Start Command:**
    ```bash
    gunicorn --bind 0.0.0.0:$PORT --timeout 120 --workers 1 app:app
    ```
-5. **Manual Deploy** → wait for build to finish
-6. Open `https://YOUR-SERVICE.onrender.com/health` and confirm:
-   - `"ml_intent": "ready"`
-   - `"qiskit_metal": "available"`
+7. **Manual Deploy** → wait 10–25 minutes
+8. Check `https://YOUR-SERVICE.onrender.com/health`:
+   - ML: `"ml_intent": "ready"`
+   - Metal: `"qiskit_metal": "available"` (only with `requirements-full.txt`)
+
+#### Build failed with `Cannot import setuptools.build_meta`
+
+- Set `PYTHON_VERSION=3.11.9`
+- Use the build command with `pip install --upgrade pip setuptools wheel &&` first
+- If `requirements-full.txt` still fails, use **`requirements-ml.txt`** (ML + schematic, no Metal)
 
 ### Option B — Docker (Railway / Fly.io)
 
