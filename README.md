@@ -209,3 +209,4 @@ curl -X POST http://localhost:5000/generate \
 
 - [Backend README](./backend/README.md) — Python module reference and API details
 - [Frontend README (routes)](./frontendv2/src/routes/README.md) — TanStack file-based routing conventions
+- [Deployment guide](./DEPLOY.md) — Vercel + Render setup
