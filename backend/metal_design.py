@@ -270,6 +270,36 @@ def generate_metal_chip(prompt: str) -> Dict[str, Any]:
     scale = _detect_chip_scale(prompt)
     label = _detect_label(prompt, n, topology, requested)
 
+    # -----------------------------------------------------------------------
+    # Demo presets (1–5 qubits)
+    # -----------------------------------------------------------------------
+    # For client demos we want deterministic, "polished" outputs even when the
+    # backend is running without Metal/torch. We always return:
+    # - a stable chip image (schematic)
+    # - a predefined Qiskit Metal script (copy/paste)
+    if 1 <= n <= 5:
+        from demo_presets import get_demo_preset
+        preset = get_demo_preset(n, topology)
+        result = _build_schematic_response(
+            prompt,
+            "",
+            n,
+            requested,
+            topology,
+            scale,
+            label,
+            ml_info,
+        )
+        if preset is not None:
+            result["engine"] = "demo-preset"
+            result["code"] = preset.code
+            result["interpretation"] = (
+                _interpret_prompt(prompt, n, requested, topology, scale, False, ml_info)
+                + " (demo preset: predefined Qiskit Metal code)"
+            )
+            result["error_hint"] = None
+        return result
+
     if _metal_installed():
         try:
             metal = _try_v2_metal_build(n, scale, topology)

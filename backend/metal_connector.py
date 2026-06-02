@@ -57,7 +57,7 @@ def metal_status() -> dict:
     try:
         import qiskit_metal as qm
         st["installed"]=True; st["version"]=getattr(qm,"__version__","unknown")
-    except ImportError as e:
+    except Exception as e:
         st["error"]=str(e); return st
     for name,mod in {
         "TransmonPocket":    "qiskit_metal.qlibrary.qubits.transmon_pocket",
