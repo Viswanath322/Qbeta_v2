@@ -22,6 +22,16 @@ class DemoPreset:
     code: str
 
 
+def _read_asset_b64(filename: str) -> str | None:
+    from pathlib import Path
+    import base64
+
+    path = Path(__file__).resolve().parent / "demo_assets" / filename
+    if not path.is_file():
+        return None
+    return base64.b64encode(path.read_bytes()).decode("utf-8")
+
+
 def _grid_positions_um(n: int) -> list[tuple[float, float]]:
     # Simple deterministic grid for 1–5 qubits.
     if n <= 1:
@@ -132,4 +142,43 @@ def get_demo_preset(n: int, topology: str) -> DemoPreset | None:
         title=f"Demo Preset — {n}Q {topo}",
         code=_metal_script_for_grid(n),
     )
+
+
+def get_demo_fabricated_image_b64(n: int) -> str | None:
+    """Return a pre-rendered Qiskit Metal fabricated PNG for 1–5 qubits."""
+    if n < 1 or n > 5:
+        return None
+    return _read_asset_b64(f"fabricated_{n}q.png")
+
+
+def get_demo_code(n: int, topology: str = "grid") -> str | None:
+    """Return stored Metal script from demo_assets if generated with Metal."""
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parent / "demo_assets" / f"qbeta_{n}q.py"
+    if path.is_file():
+        return path.read_text(encoding="utf-8")
+    preset = get_demo_preset(n, topology)
+    return preset.code if preset else None
+
+
+def demo_assets_ready() -> bool:
+    """True if all 1–5 Q Metal PNG presets exist."""
+    from pathlib import Path
+
+    base = Path(__file__).resolve().parent / "demo_assets"
+    return all((base / f"fabricated_{n}q.png").is_file() for n in range(1, 6))
+
+
+def get_demo_manifest() -> dict | None:
+    from pathlib import Path
+    import json
+
+    path = Path(__file__).resolve().parent / "demo_assets" / "manifest.json"
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 

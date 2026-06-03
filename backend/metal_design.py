@@ -271,34 +271,71 @@ def generate_metal_chip(prompt: str) -> Dict[str, Any]:
     label = _detect_label(prompt, n, topology, requested)
 
     # -----------------------------------------------------------------------
-    # Demo presets (1–5 qubits)
+    # Demo presets (1–5 qubits) — real Qiskit Metal PNGs baked into demo_assets/
     # -----------------------------------------------------------------------
-    # For client demos we want deterministic, "polished" outputs even when the
-    # backend is running without Metal/torch. We always return:
-    # - a stable chip image (schematic)
-    # - a predefined Qiskit Metal script (copy/paste)
     if 1 <= n <= 5:
-        from demo_presets import get_demo_preset
-        preset = get_demo_preset(n, topology)
-        result = _build_schematic_response(
-            prompt,
-            "",
-            n,
-            requested,
-            topology,
-            scale,
-            label,
-            ml_info,
+        from demo_presets import (
+            demo_assets_ready,
+            get_demo_code,
+            get_demo_fabricated_image_b64,
+            get_demo_manifest,
         )
-        if preset is not None:
-            result["engine"] = "demo-preset"
-            result["code"] = preset.code
+
+        fabricated_b64 = get_demo_fabricated_image_b64(n)
+        preset_code = get_demo_code(n, topology)
+
+        # If baked Metal PNG exists → always serve it (works on Render without Metal)
+        if fabricated_b64 and preset_code:
+            result = _build_schematic_response(
+                prompt, "", n, requested, topology, scale, label, ml_info,
+            )
+            manifest = get_demo_manifest() or {}
+            preset_info = (manifest.get("presets") or {}).get(str(n), {})
+            result["engine"] = "qiskit-metal-demo-preset"
+            result["fabricated_image"] = fabricated_b64
+            result["chip_image"] = fabricated_b64
+            result["code"] = preset_code
             result["interpretation"] = (
-                _interpret_prompt(prompt, n, requested, topology, scale, False, ml_info)
-                + " (demo preset: predefined Qiskit Metal code)"
+                _interpret_prompt(prompt, n, requested, topology, scale, True, ml_info)
+                + f" (demo preset: Qiskit Metal layout, {preset_info.get('components', '?')} components)"
             )
             result["error_hint"] = None
-        return result
+            if preset_info.get("drc_passed") is not None:
+                result.setdefault("drc", {})["passed"] = bool(preset_info["drc_passed"])
+            return result
+
+        # No baked assets — try live Metal if installed
+        if _metal_installed():
+            try:
+                metal = _try_v2_metal_build(n, scale, topology)
+                return {
+                    "label": label,
+                    "num_qubits": n,
+                    "requested_qubits": requested,
+                    "topology": topology,
+                    "interpretation": _interpret_prompt(
+                        prompt, n, requested, topology, scale, True, ml_info
+                    ),
+                    "ml_prediction": ml_info,
+                    "circuit_image": "",
+                    "depth": 0,
+                    "code": _generate_v2_code(n, topology, scale),
+                    **metal,
+                }
+            except Exception as exc:
+                return _build_schematic_response(
+                    prompt, str(exc), n, requested, topology, scale, label, ml_info
+                )
+
+        hint = (
+            "Demo Metal presets missing. Run: cd backend && python generate_demo_assets.py "
+            "(requires Qiskit Metal locally), then commit demo_assets/."
+        )
+        if not demo_assets_ready():
+            hint += " Missing fabricated_1q.png … fabricated_5q.png."
+        return _build_schematic_response(
+            prompt, hint, n, requested, topology, scale, label, ml_info
+        )
 
     if _metal_installed():
         try:

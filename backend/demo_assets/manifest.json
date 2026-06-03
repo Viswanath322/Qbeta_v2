@@ -1,0 +1,42 @@
+{
+  "generated_at": "manual",
+  "metal_version": "0.7.1",
+  "source": "qiskit_metal",
+  "presets": {
+    "1": {
+      "png": "fabricated_1q.png",
+      "code": "qbeta_1q.py",
+      "components": 3,
+      "topology": "grid",
+      "drc_passed": true
+    },
+    "2": {
+      "png": "fabricated_2q.png",
+      "code": "qbeta_2q.py",
+      "components": 7,
+      "topology": "grid",
+      "drc_passed": true
+    },
+    "3": {
+      "png": "fabricated_3q.png",
+      "code": "qbeta_3q.py",
+      "components": 11,
+      "topology": "grid",
+      "drc_passed": true
+    },
+    "4": {
+      "png": "fabricated_4q.png",
+      "code": "qbeta_4q.py",
+      "components": 16,
+      "topology": "grid",
+      "drc_passed": true
+    },
+    "5": {
+      "png": "fabricated_5q.png",
+      "code": "qbeta_5q.py",
+      "components": 20,
+      "topology": "grid",
+      "drc_passed": true
+    }
+  }
+}
